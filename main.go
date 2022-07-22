@@ -36,15 +36,7 @@ func failOnError(err error, msg string) {
 }
 
 func main() {
-	dbHost := getEnv("DB_HOST", "127.0.0.1")
-	dbPort := getEnv("DB_PORT", "5455")
-	dbUser := os.Getenv("DB_USER")
-	dbPass := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	timeZone := os.Getenv("TZ")
-
-	dbConn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=%s", dbHost, dbPort, dbUser, dbPass, dbName, timeZone)
-	db, err := sql.Open(getEnv("DB_DRIVER", "postgres"), dbConn)
+	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
 	failOnError(err, "failed to open database")
 	defer func() {
 		if err := db.Close(); err != nil {
@@ -213,7 +205,7 @@ func NewRepository(db *sql.DB) *Repository {
 
 func (r *Repository) GetProvinces(ctx context.Context) ([]Province, error) {
 	q, args, err := sq.Select("id", "name", "name_english", "code").
-		From("provinces").
+		From("tb_provinces").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
@@ -238,7 +230,7 @@ func (r *Repository) GetProvinces(ctx context.Context) ([]Province, error) {
 
 func (r *Repository) GetProvinceByID(ctx context.Context, provinceID int) (Province, error) {
 	q, args, err := sq.Select("id", "name", "name_english", "code").
-		From("provinces").
+		From("tb_provinces").
 		Where("id = ?", provinceID).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -258,7 +250,7 @@ func (r *Repository) GetProvinceByID(ctx context.Context, provinceID int) (Provi
 
 func (r *Repository) GetCities(ctx context.Context, provinceID int) ([]City, error) {
 	q, args, err := sq.Select("id", "name", "name_english").
-		From("cities").
+		From("tb_cities").
 		Where(sq.Eq{"province_id": provinceID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
