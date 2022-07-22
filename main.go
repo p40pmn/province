@@ -59,7 +59,7 @@ func main() {
 
 	route := e.Group("/api/v1")
 	route.GET("/provinces", h.GetAll)
-	route.GET("/provinces/:id", h.GetByID)
+	route.GET("/provinces/:id/cities", h.GetByID)
 
 	go func() {
 		if err := e.Start(fmt.Sprintf(":%s", getEnv("PORT", "8080"))); err != nil {
