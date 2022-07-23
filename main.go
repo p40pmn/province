@@ -84,19 +84,26 @@ func helper(err error, c echo.Context) {
 	switch err {
 	case ErrInvalidParamInt:
 		c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"error":   "invalid parameter",
+			"code":    http.StatusBadRequest,
 			"message": err.Error(),
 		})
 
 	case ErrUnknownProvince:
 		c.JSON(http.StatusNotFound, map[string]interface{}{
-			"error":   "requested item not found",
+			"code":    http.StatusNotFound,
 			"message": err.Error(),
 		})
 
 	default:
+		if echoErr, ok := err.(*echo.HTTPError); ok {
+			c.JSON(echoErr.Code, map[string]interface{}{
+				"code":    echoErr.Code,
+				"message": echoErr.Message,
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error":   "internal server error",
+			"code":    http.StatusInternalServerError,
 			"message": "something went wrong",
 		})
 	}
@@ -174,7 +181,7 @@ func assemble(province *Province, cities []City) *Province {
 }
 
 // ErrUnknownProvince is returned when a province could not be found.
-var ErrUnknownProvince = errors.New("unknown province")
+var ErrUnknownProvince = errors.New("province could not be found")
 
 // Province represents a province.
 type Province struct {
